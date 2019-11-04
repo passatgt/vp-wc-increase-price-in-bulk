@@ -40,15 +40,18 @@ class VP_WC_Increase_Price_In_Bulk_BG extends WC_Background_Process {
   }
 
   public function update_products($limit = 20) {
+    $percentage = get_option('_vp_wc_increase_price_in_bulk_percentage');
+    $session = get_option('_vp_wc_increase_price_in_bulk_session');
+
     $query = array(
       'limit' => $limit,
       'meta_key'     => '_vp_wc_price_updated',
-      'meta_compare' => 'NOT EXISTS'
+      'meta_compare' => '!=',
+      'meta_value'   => $session
     );
 
     $products = wc_get_products( $query );
     $count = 0;
-    $percentage = get_option('_vp_wc_increase_price_in_bulk_percentage');
 
     foreach ($products as $product) {
       if( $product->is_type('variable') ){
@@ -67,7 +70,7 @@ class VP_WC_Increase_Price_In_Bulk_BG extends WC_Background_Process {
         $product->set_price( $price );
       }
 
-      $product->add_meta_data('_vp_wc_price_updated', true);
+      $product->add_meta_data('_vp_wc_price_updated', $session);
       $product->save();
 
       $count++;
